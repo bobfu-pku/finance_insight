@@ -1,10 +1,11 @@
-import alpaca_trade_api as tradeapi
+import datetime
 import threading
 import time
-import datetime
 
-API_KEY = "YOUR_API_KEY_HERE"
-API_SECRET = "YOUR_API_SECRET_HERE"
+import alpaca_trade_api as tradeapi
+
+API_KEY = "PK4AJ8TN25KTZBTVLH6R"
+API_SECRET = "mCtlDH2Euk3kiOVf67gBjNYSA3FdKwroVV6nbU9F"
 APCA_API_BASE_URL = "https://paper-api.alpaca.markets"
 
 
@@ -305,12 +306,12 @@ class LongShort:
       print("Quantity is 0, order of | " + str(qty) + " " + stock + " " + side + " | not completed.")
       resp.append(True)
 
-  # Get percent changes of the stock prices over the past 10 days.
+  # Get percent changes of the stock prices over the past 10 minutes.
   def getPercentChanges(self):
     length = 10
     for i, stock in enumerate(self.allStocks):
       bars = self.alpaca.get_barset(stock[0], 'minute', length)
-      self.allStocks[i][1] = (bars[stock[0]][len(bars[stock[0]]) - 1].c - bars[stock[0]][0].o) / bars[stock[0]][0].o
+      self.allStocks[i][1] = (bars[stock[0]][-1].c - bars[stock[0]][0].o) / bars[stock[0]][0].o
 
   # Mechanism used to rank the stocks, the basis of the Long-Short Equity Strategy.
   def rank(self):
