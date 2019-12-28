@@ -29,7 +29,7 @@ class backtest(object):
         for i, date in enumerate(self.alpha.index):
             if i % self.turnover == 0:
                 stock_list = self._get_list(date)  # get the SP100 stock list of that day
-                alpha_list = self.alpha[stock_list].loc[date].sort_values()  # ascending sort
+                alpha_list = self.alpha[stock_list].loc[date].sort_values(ascending=False)  # ascending sort
 
                 split_len = round(len(alpha_list) / self.split)
                 long_list = alpha_list.index[:split_len]  # long stocks with least returns
@@ -62,9 +62,9 @@ class backtest(object):
         ret = self.data / self.data.shift(1) - 1
         if self.test_mode == 1:
             # alpha = ret.shift(1)  # test1
-            alpha = self.data.shift(1) / self.data.shift(21) - 1
+            alpha = -(self.data.shift(1) / self.data.shift(21) - 1)
         elif self.test_mode == 2:
-            alpha = ret.rolling(21).apply(self._f, raw=True)  # test2
+            alpha = -ret.rolling(21).apply(self._f, raw=True)  # test2
         else:
             raise ValueError
         alpha.dropna(inplace=True, how='all')
