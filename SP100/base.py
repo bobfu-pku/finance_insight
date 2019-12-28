@@ -1,7 +1,8 @@
+from datetime import datetime
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from datetime import datetime
 
 from SP100.src.prepare_data import sp100
 
@@ -27,12 +28,12 @@ class backtest(object):
 
         for i, date in enumerate(self.alpha.index):
             if i % self.turnover == 0:
-                stock_list = self._get_list(date)
-                alpha_list = self.alpha[stock_list].loc[date].sort_values()
+                stock_list = self._get_list(date)  # get the SP100 stock list of that day
+                alpha_list = self.alpha[stock_list].loc[date].sort_values()  # ascending sort
 
                 split_len = round(len(alpha_list) / self.split)
-                long_list = alpha_list.index[:split_len]
-                short_list = alpha_list.index[-split_len:]
+                long_list = alpha_list.index[:split_len]  # long stocks with least returns
+                short_list = alpha_list.index[-split_len:]  # short stocks with most returns
 
             long_ret = self.ret[long_list].loc[date].mean()
             short_ret = self.ret[short_list].loc[date].mean()
@@ -57,9 +58,11 @@ class backtest(object):
         return list(list_)
 
     def _get_alpha(self):
+        # the data is the close price
         ret = self.data / self.data.shift(1) - 1
         if self.test_mode == 1:
-            alpha = ret.shift(1)  # test1
+            # alpha = ret.shift(1)  # test1
+            alpha = self.data.shift(1) / self.data.shift(21) - 1
         elif self.test_mode == 2:
             alpha = ret.rolling(21).apply(self._f, raw=True)  # test2
         else:
@@ -99,7 +102,7 @@ class backtest(object):
 
 def summary(test_mode=1, index='hedging', column='sharpe_ratio'):
     """
-    get the statistic summary
+    get the statistic summary_df
     :param test_mode: choose test1 / test2
     :param index: choose long / short / hedging
     :param column: choose return / sharpe_ratio / max_drawdown_ratio / max_drawdown_days
@@ -108,21 +111,22 @@ def summary(test_mode=1, index='hedging', column='sharpe_ratio'):
     res = pd.DataFrame(columns=[1, 2, 3, 5, 7, 10, 15, 20], index=[2, 3, 4, 5])
     for turnover in [1, 2, 3, 5, 7, 10, 15, 20]:
         for split in [2, 3, 4, 5]:
-            df = pd.read_csv(f'/Users/bob/PycharmData/sp100/test{test_mode}/turnover{turnover}_split{split}.csv',
+            df = pd.read_csv(f'/Users/bob/PycharmData/sp100/test{test_mode}/turnover_{turnover}_split{split}.csv',
                              index_col=0)
             res.loc[split, turnover] = df.loc[index, column]
-    # res.to_csv('/Users/bob/PycharmData/sp100/res.csv')
+    res.to_csv(f'/Users/bob/PycharmData/sp100/res_test{test_mode}__index_{index}__column{column}.csv')
     return res
 
 
 if __name__ == '__main__':
-    test_mode = 1
+    test_mode_ = 1
 
-    for turnover in [1, 2, 3, 5, 7, 10, 15, 20]:
-        for split in [2, 3, 4, 5]:
-            bt = backtest(turnover, split)
-            portfolio, summary = bt.backtest()
+    for turnover_ in [1, 2, 3, 5, 7, 10, 15, 20]:
+        for split_ in [2, 3, 4, 5]:
+            bt = backtest(test_mode_, turnover_, split_)
+            portfolio, summary_df = bt.backtest()
             portfolio.plot(figsize=(16, 8))
-            plt.savefig(f'/Users/bob/PycharmData/sp100/test{test_mode}/turnover{bt.turnover}_split{bt.split}.png')
+            plt.savefig(f'/Users/bob/PycharmData/sp100/test{test_mode_}/turnover_{bt.turnover}_split{bt.split}.png')
             plt.close()
-            summary.to_csv(f'/Users/bob/PycharmData/sp100/test{test_mode}/turnover{bt.turnover}_split{bt.split}.csv')
+            summary_df.to_csv(
+                f'/Users/bob/PycharmData/sp100/test{test_mode_}/turnover_{bt.turnover}_split{bt.split}.csv')
