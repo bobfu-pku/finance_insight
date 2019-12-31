@@ -85,7 +85,7 @@ class LongShort(object):
                     tSO.join()
                 else:
                     # Position in short list.
-                    if (position.side == "long"):
+                    if position.side == "long":
                         # Position changed from long to short.  Clear long position to prepare for short position.
                         side = "sell"
                         respSO = []
@@ -94,13 +94,13 @@ class LongShort(object):
                         tSO.start()
                         tSO.join()
                     else:
-                        if (abs(int(float(position.qty))) == self.qShort):
+                        if abs(int(float(position.qty))) == self.qShort:
                             # Position is where we want it.  Pass for now.
                             pass
                         else:
                             # Need to adjust position amount
                             diff = abs(int(float(position.qty))) - self.qShort
-                            if (diff > 0):
+                            if diff > 0:
                                 # Too many short positions.  Buy some back to rebalance.
                                 side = "buy"
                             else:
@@ -115,7 +115,7 @@ class LongShort(object):
                         self.blocklist.add(position.symbol)
             else:
                 # Position in long list.
-                if (position.side == "short"):
+                if position.side == "short":
                     # Position changed from short to long.  Clear short position to prepare for long position.
                     respSO = []
                     tSO = threading.Thread(target=self.submit_order,
@@ -123,13 +123,13 @@ class LongShort(object):
                     tSO.start()
                     tSO.join()
                 else:
-                    if (int(float(position.qty)) == self.qLong):
+                    if int(float(position.qty)) == self.qLong:
                         # Position is where we want it.  Pass for now.
                         pass
                     else:
                         # Need to adjust position amount.
                         diff = abs(int(float(position.qty))) - self.qLong
-                        if (diff > 0):
+                        if diff > 0:
                             # Too many long positions.  Sell some to rebalance.
                             side = "sell"
                         else:
@@ -181,9 +181,9 @@ class LongShort(object):
         self.long = []
         self.short = []
         for i, stockField in enumerate(self.allStocks):
-            if (i < longShortNumber):
+            if i < longShortNumber:
                 self.short.append(stockField[0])
-            elif (i > (len(self.allStocks) - 1 - longShortNumber)):
+            elif i > (len(self.allStocks) - 1 - longShortNumber):
                 self.long.append(stockField[0])
             else:
                 continue
@@ -215,7 +215,7 @@ class LongShort(object):
 
     # Submit an order if quantity is above 0.
     def submit_order(self, qty, stock, side, resp):
-        if (qty > 0):
+        if qty > 0:
             try:
                 self.alpaca.submit_order(stock, qty, side, "market", "day")
                 print("Market order of | " + str(qty) + " " + stock + " " + side + " | completed.")
@@ -230,7 +230,7 @@ class LongShort(object):
     # Wait for market to open.
     def await_market_open(self):
         isOpen = self.alpaca.get_clock().is_open
-        while (not isOpen):
+        while not isOpen:
             clock = self.alpaca.get_clock()
             openingTime = clock.next_open.replace(tzinfo=datetime.timezone.utc).timestamp()
             currTime = clock.timestamp.replace(tzinfo=datetime.timezone.utc).timestamp()
